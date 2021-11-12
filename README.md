@@ -32,6 +32,11 @@ xinc=0.25
 yfirst=36
 yinc=0.25
 ```
+Per una reinterpolazione bilineare usare:
+
+```
+cdo sellonlatbox,5,20,36,48 -remapbil,grid.txt file_input.nc  file_output.nc
+```
 
 La descrizione del grigliato di output puo' essere acquisito dai file netCDF estratti da Copernicus Land (che sono già in formato latlon regolare) utilizzando (ad esempio) il pacchetto `raster` di `R`.
  
