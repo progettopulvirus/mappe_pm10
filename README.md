@@ -20,7 +20,7 @@ I dati meteo 2021-2020 sono stati acquisiti da Copernicus mediante script in pyt
 
 Per l'AOD la fonte sono le rianalisi di [Copernicus](https://www.copernicus.eu/en/copernicus-services/atmosphere). Il dataset è il "Total Aerosolo Optical Depth" 550.
 
-I dati di AOD sono stati reinterpolati su grigliato latlon regolare mediante CDO dopo aver predisposto un file grid.txt contenente la descrizione della griglia target.
+I dati di AOD sono stati reinterpolati su grigliato latlon regolare mediante `CDO` (usando `remapbil`) dopo aver predisposto un file di testo `grid.txt` contenente la descrizione della griglia target contenente le seguenti informazioni:
 
 ```
 gridtype=lonlat
@@ -32,6 +32,8 @@ xinc=0.25
 yfirst=36
 yinc=0.25
 ```
+
+La descrizione del grigliato di output puo' essere acquisito dai file netCDF estratti da Copernicus Land (che sono già in formato latlon regolare) utilizzando (ad esempio) il pacchetto `raster` di `R`.
  
  
  **Attenzione: il file .cdsapirc necessario per scaricare i dati AOD va modificato rispetto a quello utilizzato per Copernicus Land, ovvero va cambiato l'url e l'API key.**
