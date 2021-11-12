@@ -12,9 +12,13 @@ Scipt per elaborare i file netCDF scaricati da Copernicus.
 
 ---
 
+## DATI PM10
+
+Dati delle centraline di monitoraggio dal 2013 al 2020.
+
 ## Dati meteo
 
-I dati meteo 2021-2020 sono stati acquisiti da Copernicus mediante script in python.
+I dati meteo 2012-2020 sono stati acquisiti da Copernicus mediante script in python. I dati sono stati estratti dal 2012 in quanto per ogni anno target X (ad esempio il 2020) abbiamo bisogno del 31 dicembre dell'anno antecedente a X in modo di poter generare la mappa del primo gennaio dell'anno X (il modello contiene una componente AR1).
 
 ## AOD550
 
