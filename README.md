@@ -1,6 +1,13 @@
 # Mappe PM10
 
-Codici per la realizzazione delle mappe del PM10 per il periodo 2013-2020,
+Questo repository contiene:
+
+- i codici per la realizzazione delle mappe del PM10 per il periodo 2013-2020
+- i dati di PM10 2013-2020
+
+## Database
+
+I dati di input puntuali (corrispondenti alle centraline di monitoraggio) di PM10 e dei regressori spazio-temporali sono stati organizzati in un database sqlite utilizzando il pacchetto R `RSQLite`.
 
 ## Python
 
