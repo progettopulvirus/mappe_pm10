@@ -10,3 +10,31 @@ Script python per scaricare i netCDF da Copernicus.
 
 Scipt per elaborare i file netCDF scaricati da Copernicus.
 
+---
+
+## Dati meteo
+
+I dati meteo 2021-2020 sono stati acquisiti da Copernicus mediante script in python.
+
+## AOD550
+
+Per l'AOD la fonte sono le rianalisi di [Copernicus](https://www.copernicus.eu/en/copernicus-services/atmosphere). Il dataset è il "Total Aerosolo Optical Depth" 550.
+
+I dati di AOD sono stati reinterpolati su grigliato latlon regolare mediante CDO dopo aver predisposto un file grid.txt contenente la descrizione della griglia target.
+
+```
+gridtype=lonlat
+gridsize=18271
+xsize=121
+ysize=151
+xfirst=5.00
+xinc=0.25
+yfirst=36
+yinc=0.25
+```
+ 
+ 
+ **Attenzione: il file .cdsapirc necessario per scaricare i dati AOD va modificato rispetto a quello utilizzato per Copernicus Land, ovvero va cambiato l'url e l'API key.**
+ 
+ **Per l'AOD lo script python si blocca a causa di un qualche errore che non si e' riusciti a risolvere. I dati sono quindi stati scaricati direttamente tramite interfaccia web.**
+
