@@ -56,3 +56,14 @@ La descrizione del grigliato di output puo' essere acquisito dai file netCDF est
  
  **Per l'AOD lo script python si blocca a causa di un qualche errore che non si e' riusciti a risolvere. I dati sono quindi stati scaricati direttamente tramite interfaccia web.**
 
+
+## Dati DUST
+
+I dati (file netCDF 2013-2020) sono stati scaricati da Giorgio. Si tratta di forecast, per cui uno stesso dato e' presente in piu' file (ad esempio il file del primo settembre contiene le previsioni del dust fino al 4 settembre, il file del 2 settembre contiene le previsioni fino al 5 etc etc.). Per ovviare al problema dei timestamps ripetuti va utilizzata la variabile SKIP_SAME_TIME. Ovvero:
+
+```
+export SKIP_SAME_TIME=1
+cdo mergetime input.nc output.nc
+```
+
+**ATTENZIONE: i file di settembre 2020 hanno dei problemi con la griglia e con giorni mancanti (dal 26 al 28 settembre). Il problema della griglia viene risolto facendo prima di `mergetime` un `-sellonlatbox -remapbil,grid.txt`. Il problema dei giorni mancanti è stato risolto prendendo il file di un giorno qualsiasi, settando il time axis (`settimeaxis`) e imponendo che il valore della variabile sconc_dust sia ugaule a zero nell'area di interesse `selclonlatbox,0,5,20,36,48`. In altri temini si è assunto che per i giorni mancanti non si verifichino eventi di dust.**
