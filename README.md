@@ -67,7 +67,7 @@ export SKIP_SAME_TIME=1
 cdo mergetime input.nc output.nc
 ```
 
-**ATTENZIONE: i file di settembre 2020 hanno dei problemi con la griglia e con giorni mancanti (dal 26 al 28 settembre). Il problema della griglia viene risolto facendo prima di `mergetime` un `-sellonlatbox -remapbil,grid.txt`. Il problema dei giorni mancanti è stato risolto prendendo il file di un giorno qualsiasi, settando il time axis (`settimeaxis`) e imponendo che il valore della variabile sconc_dust sia ugaule a zero nell'area di interesse `selclonlatbox,0,5,20,36,48`. In altri temini si è assunto che per i giorni mancanti non si verifichino eventi di dust.**
+**ATTENZIONE: i file di settembre 2020 hanno dei problemi con la griglia e con giorni mancanti (dal 26 al 28 settembre). Il problema della griglia viene risolto facendo prima di `mergetime` un `-sellonlatbox -remapbil,grid.txt`. Il problema dei giorni mancanti è stato risolto prendendo il file di un giorno qualsiasi, settando il time axis (`settimeaxis`) e imponendo che il valore della variabile sconc_dust sia ugaule a zero nell'area di interesse `setclonlatbox,0,5,20,36,48`. In altri temini si è assunto che per i giorni mancanti non si verifichino eventi di dust.**
 
 File netCDF dust, dati mancanti:
 
