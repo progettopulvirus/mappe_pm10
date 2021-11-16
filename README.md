@@ -59,7 +59,8 @@ La descrizione del grigliato di output puo' essere acquisito dai file netCDF est
 
 ## Dati DUST
 
-I dati (file netCDF 2013-2020) sono stati scaricati da Giorgio. Si tratta di forecast, per cui uno stesso dato e' presente in piu' file (ad esempio il file del primo settembre contiene le previsioni del dust fino al 4 settembre, il file del 2 settembre contiene le previsioni fino al 5 etc etc.). Per ovviare al problema dei timestamps ripetuti va utilizzata la variabile SKIP_SAME_TIME. Ovvero:
+I dati (file netCDF 2013-2020) sono stati scaricati da Giorgio. I file contengono due variabili. Quella di interesse e' `sconc_dust` che va moltiplicata per 10^9.
+Si tratta di forecast, per cui uno stesso dato e' presente in piu' file (ad esempio il file del primo settembre contiene le previsioni del dust fino al 4 settembre, il file del 2 settembre contiene le previsioni fino al 5 etc etc.). Per ovviare al problema dei timestamps ripetuti va utilizzata la variabile SKIP_SAME_TIME. Ovvero:
 
 ```
 export SKIP_SAME_TIME=1
