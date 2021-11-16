@@ -67,3 +67,19 @@ cdo mergetime input.nc output.nc
 ```
 
 **ATTENZIONE: i file di settembre 2020 hanno dei problemi con la griglia e con giorni mancanti (dal 26 al 28 settembre). Il problema della griglia viene risolto facendo prima di `mergetime` un `-sellonlatbox -remapbil,grid.txt`. Il problema dei giorni mancanti è stato risolto prendendo il file di un giorno qualsiasi, settando il time axis (`settimeaxis`) e imponendo che il valore della variabile sconc_dust sia ugaule a zero nell'area di interesse `selclonlatbox,0,5,20,36,48`. In altri temini si è assunto che per i giorni mancanti non si verifichino eventi di dust.**
+
+File netCDF dust, dati mancanti:
+
+- settembre 2020 ha problemi con la dimensione della griglia e con i giorni mancanti dal 26 al 28
+- febbraio 2014 mancano i giorni dal 24 al 28 febbraio
+- 2019 mancano i giorni dal 10 al 17 febbraio, dal 4 al 30 settembre, dal 7 al 18 novembre
+- 2017 mancano i giorni dal 14 al 20 settembre
+
+Esempio di creazione di giorni di riempimento:
+
+```
+cdo -setclonlatbox,0,5,20,36,48 -settaxis,2017-09-14,00:00:00,1day -seldate,2017-01-01,2017-01-05 input.nc output.nc
+```
+
+Nel comando sopra vengo presi i giorni dal 1 al 5 gennaio del file input.nc; i giorni vengono fatti partie dal 14 settembre 2017 e i valori messi a 0 all'interno dell'area del Mediterraneo. Il file output.nc quindi puo' essere unito mediante `mergetime` al file con tutti i giorni per il 2017.
+
