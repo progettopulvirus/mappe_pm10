@@ -165,7 +165,7 @@ purrr::walk(4:6,.f=function(MESE){
     mutate(banda=as.integer(yymmdd-(primo_giorno-1))) %>%
     dplyr::select(banda,yymmdd,everything()) %>%
     arrange(banda,station_eu_code)->subpm10
-  browser()
+  #browser()
   saveRDS(subpm10,glue::glue("subpm10_{annoF}_{MESE}.RDS"))
   
   
