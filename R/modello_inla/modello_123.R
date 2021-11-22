@@ -21,7 +21,7 @@ parametri<-c("aod550","dust","ptotal_precipitation","surface_pressure","temperat
 
 dbConnect(RSQLite::SQLite(),"pm10_maps.sqlite")->mydb
 
-dbExecute(mydb,'DROP TABLE parametri_standardizzazione')
+try({dbExecute(mydb,'DROP TABLE parametri_standardizzazione')})
 
 estrai_anagrafica(.conn=mydb,.query="SELECT * FROM anagrafica;") %>% 
   dplyr::select(station_eu_code,st_x,st_y,altitudedem,d_a1,i_surface)->ana
@@ -82,7 +82,7 @@ dbDisconnect(mydb)
 
 pm10 %>%
   mutate(yymmdd=as.Date(glue::glue("{yy}-{mm}-{dd}",format="%Y-%m-%d"))) %>%
-  mutate(lpm10=log(value+0.1)) %>%
+  mutate(lpm10=log(value+1)) %>%
   mutate(Intercept=1) %>%
   rename(ptp=ptotal_precipitation,tp=total_precipitation,t2m=temperatura,sp=surface_pressure,dem=altitudedem,logpbl00=pbl00,logpbl12=pbl12)->pm10
 
@@ -131,7 +131,7 @@ inla.spde2.pcmatern(mesh=mesh_modello,alpha=2,constr=FALSE,prior.range = c(150,0
 saveRDS(spde,glue::glue("spde_{annoF}.RDS"))
 
 
-purrr::walk(2:3,.f=function(MESE){
+purrr::walk(1:3,.f=function(MESE){
   
   # print('ciao')
   # envelope() %>%
@@ -143,24 +143,29 @@ purrr::walk(2:3,.f=function(MESE){
   # smtp(emailIniziale,verbose=T)
   
   as.Date(glue::glue("{annoF}-{MESE}-{01}"),format="%Y-%m-%d")->primo_giorno_mese
+  primo_giorno_mese-1->ultimo_giorno_mese_precedente
   
-  #voglio partire dai 7 giorni del mese precedente
-  primo_giorno_mese-7->primo_giorno
+  #Se l'anno e' bisestile significa che il 1 marzo lo stimeremo usando il 29 febbraio, altrimenti il 28 febbraio
+  #Il primo maggio sarà stimato usando il 30 aprile
+  #Il primo giugno sarà stimato usando il 31 maggio
+  #etc etc
+  as.Date(glue::glue("{year(ultimo_giorno_mese_precedente)}-{month(ultimo_giorno_mese_precedente)}-28"),format="%Y-%m-%d")->primo_giorno
   
   #questo valore cambia in base al mese e all'anno (per febbraio)
   as.integer(days_in_month(primo_giorno_mese))->numero_di_giorni_del_mese
   as.Date(glue::glue("{annoF}-{MESE}-{numero_di_giorni_del_mese}"),format="%Y-%m-%d")->ultimo_giorno_mese
   
   #per la mesh: devo considerare che il numero di giorni è numero_di_giorni_del_mese piu' la settimana antecedente
-  numero_di_giorni<-numero_di_giorni_del_mese+7
+  seq.Date(primo_giorno,ultimo_giorno_mese,by="day")->periodo_di_studio
+  length(periodo_di_studio)->numero_di_giorni
   
   
   pm10 %>%
-    filter(yymmdd %in% seq.Date(primo_giorno,ultimo_giorno_mese,by="day")) %>%
+    filter(yymmdd %in% periodo_di_studio) %>%
     mutate(banda=as.integer(yymmdd-(primo_giorno-1))) %>%
     dplyr::select(banda,yymmdd,everything()) %>%
     arrange(banda,station_eu_code)->subpm10
-  
+  browser()
   saveRDS(subpm10,glue::glue("subpm10_{annoF}_{MESE}.RDS"))
   
   
