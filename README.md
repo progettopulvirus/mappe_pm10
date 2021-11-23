@@ -1,9 +1,15 @@
-# Mappe PM10
+ # Mappe PM10
 
 Questo repository contiene:
 
 - i codici per la realizzazione delle mappe del PM10 per il periodo 2013-2020
 - i dati di PM10 2013-2020
+
+#### TO DO
+
+23 novembre: rivedere il metodo di standardizzazione delle covariate. Quello attuale prevede il calcolo di media e sd anno per anno. Questao significa che la standardizzazione dei rasters deve essere ripetuta con parametri differenti quando si creano le mappe finali. Questa soluzione e' troppo onerosa dal puntop di vista computazionale. **Soluzione:** calcolare una sola media e una sola sd su tutto il periodo 2012-2020 con cui standardizzare una sola volta tutti i rasters.
+
+
 
 ## Database
 
