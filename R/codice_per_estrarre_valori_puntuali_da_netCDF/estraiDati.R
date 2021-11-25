@@ -17,35 +17,29 @@ creaCalendario(2012,2020) %>%
 
 nrow(calendario)->numeroGiorni
 
-#dati di pm10
-read_delim("dati_pm10_2012_2020.csv",delim=";",col_names = TRUE)->dati_pm10
-
-#anagrafica
-read_delim("ana.csv",delim=";",col_names = TRUE)->ana
-
-unique(dati_pm10$station_eu_code)->codiciStazioni
-
-
-ana %>%
-  filter(station_eu_code %in% codiciStazioni)->subAna
-
-st_as_sf(subAna,coords=c("st_x","st_y"),crs=4326)->punti
+dbGetQuery(mydb,"SELECT * FROM anagrafica;")->ana
+st_as_sf(ana,coords=c("st_x","st_y"),crs=4326)->punti
 
 
 
-list.files(pattern="^.+nc$")->file_nc
+list.files(pattern="^standardized.+\\.nc$")->file_nc
 
 
 estrai<-function(.nomeFile,.x){
   
   brick(.nomeFile)->mygrid
   
-  parametro<-str_remove(str_remove(.nomeFile,"^new_"),"2012_2020.nc")
-
+  parametro<-str_remove(str_remove(.nomeFile,"^standardized_new_"),"2012_2020.nc")
+  
+  print("##################")
+  print(parametro)
+  print("##################")
+  
   if(numeroGiorni!=nlayers(mygrid)) browser()
   raster::extract(mygrid,punti,df=FALSE)->valoriPuntuali
-  bind_cols(subAna[,c("station_eu_code")],as_tibble(valoriPuntuali))->mydf
+  bind_cols(ana[,c("station_eu_code")],as_tibble(valoriPuntuali))->mydf
   
+  names(mydf)[1]<-"station_eu_code"
   
   mydf %>%
     gather(key="yymmdd",value="value",-station_eu_code) %>%
@@ -54,14 +48,16 @@ estrai<-function(.nomeFile,.x){
     separate(yymmdd,into=c("yy","mm","dd"),sep="\\.",extra = "drop") %>% #importaaante drop perche' in alcuni casi i layers del brick riportano anche l'ora
     mutate(yy=as.integer(yy),mm=as.integer(mm),dd=as.integer(dd))->finale
   
-    dbWriteTable(mydb,parametro,finale)
+  dbExecute(mydb,glue::glue("DROP TABLE {parametro};"))
+  dbWriteTable(mydb,parametro,finale)
   
-    vroom::vroom_write(finale,file = glue::glue("{parametro}_2012_2020.csv"),delim=";",col_names = TRUE)
+  vroom::vroom_write(finale,file = glue::glue("{parametro}_2012_2020.csv"),delim=";",col_names = TRUE)
   
 }
 
 
 
-purrr::walk(file_nc,.f=~(estrai(.,.x=subAna)))
+purrr::walk(file_nc,.f=~(estrai(.,.x=ana)))
 
 dbDisconnect(mydb)
+
