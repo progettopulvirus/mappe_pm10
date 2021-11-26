@@ -1,3 +1,4 @@
+#26 novembre
 rm(list=objects())
 library("DBI")
 library("tidyverse")
@@ -7,7 +8,6 @@ library("sf")
 library("sp")
 library("lubridate")
 library("regioniItalia")
-#library('emayili')
 source("queries.R")
 source("utilities.R")
 
@@ -16,65 +16,41 @@ inla.setOption(pardiso.license = "~/pardiso/licenza.txt")
 annoF<-2015
 annoI<-annoF-1
 
-parametri<-c("aod550","dust","ptotal_precipitation","surface_pressure","temperatura","total_precipitation","pbl00","pbl12")
+parametri_spazio_temporali<-c("aod550","dust","ptotal_precipitation","surface_pressure","temperatura","total_precipitation","pbl00","pbl12")
+parametri_spaziali<-c("d_a1","i_surface","altitudedem")
 
-
-dbConnect(RSQLite::SQLite(),"pm10_maps.sqlite")->mydb
-
-try({dbExecute(mydb,'DROP TABLE parametri_standardizzazione')})
+dbConnect(RSQLite::SQLite(),"pm10_maps_25novembre2021.sqlite")->mydb
 
 estrai_anagrafica(.conn=mydb,.query="SELECT * FROM anagrafica;") %>% 
-  dplyr::select(station_eu_code,st_x,st_y,altitudedem,d_a1,i_surface)->ana
+  dplyr::select(station_eu_code,st_x,st_y)->ana
 
-estrai_pm10(.conn=mydb,.query=glue::glue('SELECT * FROM pm10 WHERE ("yy" = {annoF}) OR ("yy"={annoF-1} AND mm=12 AND dd >=25);'))->pm10
+estrai_pm10(.conn=mydb,.query=glue::glue('SELECT * FROM pm10 WHERE ("yy" = {annoF}) OR ("yy"={annoF-1} AND mm=12 AND dd >=28);'))->pm10
 
-purrr::map(parametri,.f=function(.param,.y){
+purrr::map(parametri_spazio_temporali,.f=function(.param,.y){
   
-  estrai_meteo(.conn=mydb,.query=glue::glue('SELECT * FROM {.param} WHERE "yy"= {annoF} OR ("yy"={annoF-1} AND mm=12 AND dd >=25)'),.nome_parametro=.param)->df
-  
-  #log del pbl
-  if(grepl("^pbl[0-9][0-9]$",.param)){ 
-    grep("^pbl[0-9][0-9]$",names(df))->colonna
-    if(length(colonna)!=1) stop("Errore fatale!")
-    df[,colonna]<-log(df[,colonna])
-  }
-  
-  df
+  estrai_meteo(.conn=mydb,.query=glue::glue('SELECT * FROM {.param} WHERE "yy"= {annoF} OR ("yy"={annoF-1} AND mm=12 AND dd >=28)'),.nome_parametro=.param)
   
 })->lista_dati_meteo
 
-
 #PBL e AOD derivano da grigliati con una differente risoluzione spaziale rispetto ai grigliati dei dati meteo. Per questo motivo alcuni punti stazione che hanno NA
 #per il meteo possono avere dati validi per PBL e AOD
-names(lista_dati_meteo)<-parametri
+names(lista_dati_meteo)<-parametri_spazio_temporali
 purrr::reduce(lista_dati_meteo,.f=left_join,by=c("yy","mm","dd","station_eu_code"))->dati_meteo
 
-#standardizza dati meteo
-standarizza_covariate(.x=dati_meteo %>% dplyr::select(-yy,-mm,-dd,-station_eu_code))->listaMeteo
+left_join(pm10,dati_meteo,by=c("yy","mm","dd","station_eu_code"))->pm10
 
-#salviamo nel database medie e sd perche' serviranno per la creazione delle mappe di pm10, per standardizzare i rasters
-salva_parametri_per_standardizzazione(.conn=mydb,.medie=listaMeteo[[".medie"]],.sd=listaMeteo[[".sd"]],.anno=annoF,.force=TRUE)
+purrr::map(parametri_spaziali,.f=function(.param,.y){
+  
+  dbGetQuery(mydb,glue::glue("SELECT * FROM {.param};"))
+  
+})->lista_dati_spaziali
 
-#standardizza dati anagrafica
-standarizza_covariate(.x=ana %>% dplyr::select(-station_eu_code,-st_x,-st_y))->listaSpatial
+names(lista_dati_spaziali)<-parametri_spaziali
+purrr::reduce(lista_dati_spaziali,.f=left_join,by=c("station_eu_code"))->dati_spaziali
 
-#salviamo nel database medie e sd perche' serviranno per la creazione delle mappe di pm10, per standardizzare i rasters
-salva_parametri_per_standardizzazione(.conn=mydb,.medie=listaSpatial[[".medie"]],.sd=listaSpatial[[".sd"]],.anno=annoF,.force=TRUE)
-
-
-bind_cols(dati_meteo %>% dplyr::select(yy,mm,dd,station_eu_code),listaMeteo[[".x"]])->std_dati_meteo
-left_join(pm10,std_dati_meteo,by=c("yy","mm","dd","station_eu_code"))->pm10
-
-bind_cols(ana %>% dplyr::select(station_eu_code,st_x,st_y),listaSpatial[[".x"]])->std_dati_spatial
-left_join(pm10,std_dati_spatial,by=c("station_eu_code"))->pm10
+left_join(pm10,dati_spaziali,by=c("station_eu_code"))->pm10
 
 dbDisconnect(mydb)
-
-##################
-###### EMAIL ######
-##################
-#smtp<-server(host = "smtp.isprambiente.it",username = 'guido.fioravanti@isprambiente.it',password = 'cosmikdebris2015',port = 465,insecure = FALSE)
-
 
 ##################
 ###### INLA ######
@@ -165,6 +141,8 @@ purrr::walk(1:3,.f=function(MESE){
     mutate(banda=as.integer(yymmdd-(primo_giorno-1))) %>%
     dplyr::select(banda,yymmdd,everything()) %>%
     arrange(banda,station_eu_code)->subpm10
+  
+  left_join(subpm10,ana %>% dplyr::select(station_eu_code,st_x,st_y))->subpm10
   
   saveRDS(subpm10,glue::glue("subpm10_{annoF}_{MESE}.RDS"))
   
