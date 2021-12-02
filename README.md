@@ -5,15 +5,28 @@ Questo repository contiene:
 - i codici per la realizzazione delle mappe del PM10 per il periodo 2013-2020
 - i dati di PM10 2013-2020
 
-#### TO DO
+## Modello INLA
 
-23 novembre: rivedere il metodo di standardizzazione delle covariate. Quello attuale prevede il calcolo di media e sd anno per anno. Questao significa che la standardizzazione dei rasters deve essere ripetuta con parametri differenti quando si creano le mappe finali. Questa soluzione e' troppo onerosa dal puntop di vista computazionale. **Soluzione:** calcolare una sola media e una sola sd su tutto il periodo 2012-2020 con cui standardizzare una sola volta tutti i rasters.
+Il modello utilizza un file di configurazione inla.yml dove vengono letti anche i mesi da elaborare. 
 
+Per accellerare i tempi di calcolo l'idea e':
+
+- creare quattro directory con nomi pari alle stagioni (inverno, primavera, estate, autunno)
+- in ogni directory prevedere una copia o un link simbolico al file inla.yml
+- il modello prima di tutto legge il nome della directory in cui gira e in base al nome/stagione definisce la configurazione attiva nel file inla.yml
+- di fatto le varie configurazioni stagionali differiscono solo per i mesi su cui girerà il modello, tutti gli altri parametri non variano
+- utilizzando il file inla.yml possiamo mettere mano ai parametri del modello (ad esempio: annoF, l'anno oggetto di elaborazione) senza mettere mano al codice
+
+Il programma inizia leggendo il file `inla.yml`, successivamente estrae i dati (di pm10 e covariate) dal database `RSQLite` e quindi comincia la parte specifica di INLA (creazione della mesh, preparazione dello stack etc etc).
 
 
 ## Database
 
 I dati di input puntuali (corrispondenti alle centraline di monitoraggio) di PM10 e dei regressori spazio-temporali sono stati organizzati in un database sqlite utilizzando il pacchetto R `RSQLite`.
+
+Le variabili spazio-temporali e le variabili spaziali nel database sono già standardizzate. La standardizzazione e' stata fatta una sola volta su tutti gli anni direttamente sui file netCDF. In questo modo non si pone il problema di effettuare tante standardizzazioni quanti sono gli anni oggetto di elaborazione.
+
+Per ogni netCDF e' stata calcolata una media complessiva nel tempo e nello spazio. Analogalmente e' stato fatto per la sd. Quindi per ogni netCDF e' stata effettuata una classica standardizzazione: x-mean/sd. Per le covariate spaziali erano invece già disponibili i netCDF standardizzati del progetto PULVIRUS.
 
 ## Python
 
@@ -89,4 +102,8 @@ cdo -setclonlatbox,0,5,20,36,48 -settaxis,2017-09-14,00:00:00,1day -seldate,2017
 ```
 
 Nel comando sopra vengo presi i giorni dal 1 al 5 gennaio del file input.nc; i giorni vengono fatti partie dal 14 settembre 2017 e i valori messi a 0 all'interno dell'area del Mediterraneo. Il file output.nc quindi puo' essere unito mediante `mergetime` al file con tutti i giorni per il 2017.
+
+## Dati PBL
+
+I netCDF sono stati trasformati in logaritmo (come nel paper sul PM10). Quindi i dati puntuali presenti nel database `RSQLite` sono la versione datndardizzata dei dati logaritmici del PBL.
 
