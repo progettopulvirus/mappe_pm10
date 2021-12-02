@@ -1,4 +1,4 @@
-#26 novembre
+#2 dicembre
 rm(list=objects())
 library("DBI")
 library("tidyverse")
@@ -8,18 +8,27 @@ library("sf")
 library("sp")
 library("lubridate")
 library("regioniItalia")
+library("config")
 source("queries.R")
 source("utilities.R")
 
 inla.setOption(pardiso.license = "~/pardiso/licenza.txt")
 
-annoF<-2015
+Sys.setenv("R_CONFIG_ACTIVE"=basename(getwd()))
+myget<-purrr::partial(.f=config::get,file="../inla.yml")
+
+
+#anno da elaborare
+annoF<-myget("annoF")
 annoI<-annoF-1
 
-parametri_spazio_temporali<-c("aod550","dust","ptotal_precipitation","surface_pressure","temperatura","total_precipitation","pbl00","pbl12")
-parametri_spaziali<-c("d_a1","i_surface","altitudedem")
+#mesi
+mesi<-myget("mesi")
 
-dbConnect(RSQLite::SQLite(),"pm10_maps_25novembre2021.sqlite")->mydb
+parametri_spazio_temporali<-myget("parametri_spazio_temporali")
+parametri_spaziali<-myget("parametri_spaziali")
+
+dbConnect(RSQLite::SQLite(),myget("database"))->mydb
 
 estrai_anagrafica(.conn=mydb,.query="SELECT * FROM anagrafica;") %>% 
   dplyr::select(station_eu_code,st_x,st_y)->ana
@@ -56,6 +65,8 @@ dbDisconnect(mydb)
 ###### INLA ######
 ##################
 
+#Creo il logaritmo della variabile target (lpm10) e rinomino le covariate. Si noti che il pbl diventa il logaritmo del pbl.
+#Infatti il pbl e' già stato trasformato nel logaritmo a livello di file netCDF.
 pm10 %>%
   mutate(yymmdd=as.Date(glue::glue("{yy}-{mm}-{dd}",format="%Y-%m-%d"))) %>%
   mutate(lpm10=log(value+1)) %>%
@@ -107,16 +118,7 @@ inla.spde2.pcmatern(mesh=mesh_modello,alpha=2,constr=FALSE,prior.range = c(150,0
 saveRDS(spde,glue::glue("spde_{annoF}.RDS"))
 
 
-purrr::walk(1:3,.f=function(MESE){
-  
-  # print('ciao')
-  # envelope() %>%
-  #   from('guido.fioravanti@isprambiente.it') %>%
-  #   to('guido.fioravanti@isprambiente.it')  %>%
-  #   subject(glue::glue('Modello INLA pm10 anno {annoF} mese {MESE} ')) %>%
-  #   emayili::text(glue::glue("Ho iniziato! {Sys.time()}"))->emailIniziale
-
-  # smtp(emailIniziale,verbose=T)
+purrr::walk(myget("mesi"),.f=function(MESE){
   
   as.Date(glue::glue("{annoF}-{MESE}-{01}"),format="%Y-%m-%d")->primo_giorno_mese
   primo_giorno_mese-1->ultimo_giorno_mese_precedente
