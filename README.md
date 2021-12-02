@@ -3,21 +3,23 @@
 Questo repository contiene:
 
 - i codici per la realizzazione delle mappe del PM10 per il periodo 2013-2020
-- i dati di PM10 2013-2020
+- i dati (.csv) di PM10 2013-2020 (**attenzione: il modello INLA legge i dati da un database `RSQLite`)
 
 ## Modello INLA
 
-Il modello utilizza un file di configurazione inla.yml dove vengono letti anche i mesi da elaborare. 
+Il modello utilizza un file di configurazione inla.yml dove vengono letti i mesi da elaborare assieme ad altri parametri. Elaborare contemporaneamente lo stesso modello su mesi differenti permette di accellerare i tempi di calcolo.
 
-Per accellerare i tempi di calcolo l'idea e':
+Per eseeguire il modello:
 
 - creare quattro directory con nomi pari alle stagioni (inverno, primavera, estate, autunno)
-- in ogni directory prevedere una copia o un link simbolico al file inla.yml
-- il modello prima di tutto legge il nome della directory in cui gira e in base al nome/stagione definisce la configurazione attiva nel file inla.yml
-- di fatto le varie configurazioni stagionali differiscono solo per i mesi su cui girerà il modello, tutti gli altri parametri non variano
-- utilizzando il file inla.yml possiamo mettere mano ai parametri del modello (ad esempio: annoF, l'anno oggetto di elaborazione) senza mettere mano al codice
+- in ogni directory prevedere una copia o un link simbolico al file din configurazione `inla.yml` e il codice R del modello
+- il modello prima di tutto legge il nome della directory in cui gira e in base a questo definisce la configurazione attiva nel file inla.yml
+- la configurazione di default contiene i parametri comuni a tutte le stagioni
+- le varie configurazioni stagionali differiscono solo per i mesi (ereditando dalla configurazione di default tutti gli altri parametri)
 
-Il programma inizia leggendo il file `inla.yml`, successivamente estrae i dati (di pm10 e covariate) dal database `RSQLite` e quindi comincia la parte specifica di INLA (creazione della mesh, preparazione dello stack etc etc).
+Utilizzando il file `inla.yml` abbiamo un solo codice del modello per tutti i mesi. Eventuali cambiamenti ai parametri di default (in particolare: annoF) vanno apportati al file `inla.yml`.
+
+Il programma inizia leggendo il file `inla.yml`, determina la configurazione attiva in base al nome della directory/stagione, successivamente estrae i dati (di pm10 e covariate) dal database `RSQLite` e quindi comincia la parte specifica di INLA (creazione della mesh, preparazione dello stack etc etc).
 
 
 ## Database
