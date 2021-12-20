@@ -28,7 +28,7 @@ I dati di input puntuali (corrispondenti alle centraline di monitoraggio) di PM1
 
 Le variabili spazio-temporali e le variabili spaziali nel database sono già standardizzate. La standardizzazione e' stata fatta una sola volta su tutti gli anni direttamente sui file netCDF. In questo modo non si pone il problema di effettuare tante standardizzazioni quanti sono gli anni oggetto di elaborazione.
 
-Per ogni netCDF e' stata calcolata una media complessiva nel tempo e nello spazio. Analogalmente e' stato fatto per la sd. Quindi per ogni netCDF e' stata effettuata una classica standardizzazione: x-mean/sd. Per le covariate spaziali erano invece già disponibili i netCDF standardizzati del progetto PULVIRUS.
+Per ogni netCDF e' stata calcolata una media nel tempo (ogni cella del netCDF ha una propria media). Analogalmente e' stato fatto per la sd. Quindi per ogni netCDF e' stata effettuata una classica standardizzazione: x-mean/sd. Per le covariate spaziali erano invece già disponibili i netCDF standardizzati del progetto PULVIRUS.
 
 ## Python
 
