@@ -3,7 +3,7 @@ default:
   mesi: NULL
   parametri_spazio_temporali: !expr c("aod550","dust","ptotal_precipitation","surface_pressure","temperatura","total_precipitation","pbl00","pbl12")
   parametri_spaziali: !expr c("d_a1","i_surface","altitudedem")
-  database: "pm10_maps_25novembre2021.sqlite"
+  database: "pm10_maps_20dicembre2021.sqlite"
 inverno:
   mesi: !expr 1:3
 primavera:
