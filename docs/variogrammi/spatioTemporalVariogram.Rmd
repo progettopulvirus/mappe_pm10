@@ -1,0 +1,103 @@
+---
+title: "Variogramma spazio-temporale"
+subtitle: "Valori originali e residui"
+affiliation: ISPRA
+date: "`r Sys.Date()`"
+author: Guido Fioravanti
+params: 
+  mese: 1
+  anno: 2015
+---
+
+```{r intro,include=FALSE,echo=FALSE,warning=FALSE,message=FALSE}
+library("tidyverse")
+library("janitor")
+library("INLA")
+library("brinla")
+library("Hmisc")
+library("sf")
+library("cowplot")
+library("knitr")
+library("skimr")
+library("raster")
+library("sp")
+library("spacetime")
+library("gstat")
+library("regioniItalia")
+
+knitr::opts_chunk$set(fig.width = 8,fig.height=5,warning = FALSE,message = FALSE,echo=FALSE,error = FALSE)
+set.seed(1)
+
+#estensione
+st_bbox(italia)->estensione
+```
+
+```{r ffile,include=FALSE}
+list.files(pattern =glue::glue("^result_{params$anno}_{params$mese}\\.RDS"),path = "../",include.dirs = TRUE,full.names = TRUE,recursive = TRUE)->ffile
+stopifnot(length(ffile)==1)
+
+##
+str_remove(ffile,"result.+RDS")->ddir
+```
+
+
+```{r leggi}
+readRDS(ffile)->inla.out
+readRDS(glue::glue("{ddir}/iset_{params$anno}_{params$mese}.RDS"))->iset
+readRDS(glue::glue("{ddir}/stack_{params$anno}_{params$mese}.RDS"))->stack.training
+readRDS(glue::glue("{ddir}/subpm10_{params$anno}_{params$mese}.RDS"))->subDati
+
+stack.training$data$index$training->righe
+
+#calcolo residui su scala logaritmica e su scala esponenziale
+inla.out$summary.fitted.values$mean[righe]->subDati$lfitted
+exp(inla.out$summary.fitted.values$mean[righe])->subDati$fitted
+
+subDati %>% 
+  mutate(lerror=lpm10-lfitted,error=value-fitted)->subDati
+st_as_sf(subDati,coords=c("st_x","st_y"),crs=4326)->sfSubDati
+st_transform(sfSubDati,crs=32632)->utm_sfSubDati
+st_coordinates(utm_sfSubDati)[,1]->subDati$x
+st_coordinates(utm_sfSubDati)[,2]->subDati$y
+#st_geometry(utm_sfSubDati)<-NULL
+```
+
+```{r giorni,include=FALSE}
+sort(unique(subDati$banda))->GIORNI
+length(GIORNI)->n_giorni
+```
+
+```{r myformula,include=TRUE}
+as.formula(inla.out$.args$formula)->myformula
+```
+
+### Mese: `r month.name[as.integer(params$mese)]` - `r as.integer(params$anno)`
+
+Formula modello: `r as.character(myformula)`
+
+```{r creaST,include=FALSE}
+stConstruct(subDati,space=c("x","y"),time="yymmdd",SpatialObj = SpatialPoints(subDati[,c("x","y")]))->stPM10
+as(stPM10,"STFDF")->stPM10
+proj4string(stPM10)<-CRS("+init=epsg:32632")
+
+```
+
+<br><br>
+
+#### Variogramma spazio-temporale
+
+```{r variogramma,include=TRUE,fig.width=8,fig.height=6}
+#variogramma dei valori originali
+variogram(lpm10~1,stPM10,cutoff=200000,tlags=0:6)->vpm10
+plot(vpm10,map=FALSE,main="Variogramma (log) pm10")
+```
+
+<br><br>
+
+#### Variogramma spazio-temporale (residui modello)
+
+```{r variogramma_residui,include=TRUE,fig.width=8,fig.height=6}
+#variogramma dei residui
+variogram(lerror~1,stPM10,cutoff=200000,tlags=0:6)->vres
+plot(vres,map=FALSE,main="Variogramma (log) residui")
+```

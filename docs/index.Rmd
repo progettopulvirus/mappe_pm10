@@ -1,0 +1,35 @@
+---
+title: Mappe PM10 (2012 - 2020)
+subtitle: Risultati modello INLA
+author: Guido Fioravanti
+affiliation: ISPRA
+date: "`r Sys.Date()`"
+---
+
+## Verifica modello anno 2015
+
+#### Variogrammi spazio-temporali
+
+- [Gennaio](./variogrammi/spatioTemporalVariogram_2015_1.html)
+
+- [Febbraio](./variogrammi/spatioTemporalVariogram_2015_2.html)
+
+- [Marzo](./variogrammi/spatioTemporalVariogram_2015_3.html)
+
+- [Aprile](./variogrammi/spatioTemporalVariogram_2015_4.html)
+
+- [Maggio](./variogrammi/spatioTemporalVariogram_2015_5.html)
+
+- [Giugno](./variogrammi/spatioTemporalVariogram_2015_6.html)
+
+- [Luglio](./variogrammi/spatioTemporalVariogram_2015_7.html)
+
+- [Agosto](./variogrammi/spatioTemporalVariogram_2015_8.html)
+
+- [Settembre](./variogrammi/spatioTemporalVariogram_2015_9.html)
+
+- [Ottobre](./variogrammi/spatioTemporalVariogram_2015_10.html)
+
+- [Novembre](./variogrammi/spatioTemporalVariogram_2015_11.html)
+
+- [Dicembre](./variogrammi/spatioTemporalVariogram_2015_12.html)
